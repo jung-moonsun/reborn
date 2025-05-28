@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>WebSocket 채팅 테스트</h2>
+<input type="text" id="message" placeholder="메시지 입력" />
+<button onclick="sendMessage()">전송</button>
+<div id="chatBox" style="margin-top: 20px; border: 1px solid black; height: 300px; overflow-y: auto;"></div>
+
+<script>
+    let stompClient = null;
+
+    function connect() {
+        const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb3ZlQG5hdmVyLmNvbSIsImlhdCI6MTc0ODM0MjE5NCwiZXhwIjoxNzQ4NDI4NTk0fQ.zTHZmEbGPr1kcXEz7M47SHvNGvTWsoliZ00eYDneLeU';
+         const socket = new WebSocket('ws://localhost:8080/ws-chat?token=' + token);
+
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/chat/1', function (message) {
+            const data = JSON.parse(message.body);
+            showMessage(data.message);
+        });
+    }, function (error) {
+        console.error('STOMP error:', error);
+    });
+}
+
+    function sendMessage() {
+        const msg = document.getElementById('message').value;
+        const chatMessage = {
+            roomId: 1,
+            senderId: 1,
+            message: msg,
+            messageType: 'TEXT'
+        };
+        stompClient.send('/pub/chat/message', {}, JSON.stringify(chatMessage));
+    }
+
+    function showMessage(msg) {
+        const chatBox = document.getElementById('chatBox');
+        const p = document.createElement('p');
+        p.textContent = msg;
+        chatBox.appendChild(p);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    window.onload = connect;
+</script>
+</body>
+</html>
+
