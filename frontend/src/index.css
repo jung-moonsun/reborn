@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
+
+input, button, textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* 기본 컨테이너 */
+.app-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+}

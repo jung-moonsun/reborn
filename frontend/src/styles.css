@@ -1,0 +1,488 @@
+/* src/styles.css */
+
+/* ─────────────────────────────────────────── */
+/* 1. Reset & 기본 폰트 설정                   */
+/* ─────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f9f9f9;
+  color: #333333;
+}
+
+/* ─────────────────────────────────────────── */
+/* 2. 공통 버튼 스타일                         */
+/* ─────────────────────────────────────────── */
+button {
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
+}
+
+/* 주 버튼 (Primary) */
+.btn-primary {
+  background-color: #ff6600;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: #e65500;
+}
+
+/* 링크처럼 보이지만 버튼 역할 */
+.btn-link {
+  background: none;
+  color: #ff6600;
+  text-decoration: none;
+  font-weight: 500;
+}
+.btn-link:hover {
+  color: #e65500;
+}
+
+/* 작은 아이콘/텍스트 버튼 */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.4rem;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+
+  transition: background-color 0.2s;
+}
+.btn-sm:hover {
+  background-color: #f0f0f0;
+}
+
+/* ─────────────────────────────────────────── */
+/* 3. 레이아웃 공통 클래스                      */
+/* ─────────────────────────────────────────── */
+.container {
+  width: min(100% - 2rem, 1200px);
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+/* 가로 플렉스 박스: 가운데 정렬, 좌우 여백 균등 */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 카드처럼 보이는 박스 그림자 */
+.card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ─────────────────────────────────────────── */
+/* 4. 헤더(Header) 스타일                       */
+/* ─────────────────────────────────────────── */
+header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #eeeeee;
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 로고/제목 */
+header h1 a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff6600;
+  text-decoration: none;
+}
+
+/* 검색폼 */
+.search-form {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 2rem;
+  display: flex;
+}
+
+.search-form input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dddddd;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-form input:focus {
+  border-color: #ff6600;
+}
+
+.search-form button {
+  background-color: #ff6600;
+  color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+.search-form button:hover {
+  background-color: #e65500;
+}
+
+/* 네비게이션 링크 */
+nav a {
+  margin-left: 1rem;
+  font-size: 0.95rem;
+  color: #555555;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+nav a:hover {
+  color: #ff6600;
+}
+
+nav span {
+  margin-left: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+/* 로그아웃 버튼 */
+nav button.logout-btn {
+  margin-left: 1rem;
+  background: none;
+  border: 1px solid #dddddd;
+  color: #555555;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+nav button.logout-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* ─────────────────────────────────────────── */
+/* 5. HomePage (상품 목록) 스타일               */
+/* ─────────────────────────────────────────── */
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.product-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.product-card h2 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333333;
+}
+
+.product-card p.price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ff6600;
+  margin-bottom: 0.5rem;
+}
+
+.product-card .meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #777777;
+}
+
+/* 카드 전체 영역에 클릭 효과 */
+.product-card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ─────────────────────────────────────────── */
+/* 6. ProductDetailPage 스타일                   */
+/* ─────────────────────────────────────────── */
+.product-detail {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* 좌측 이미지 영역 */
+.product-detail .images {
+  flex: 1;
+}
+.product-detail .images img {
+  width: 100%;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+
+/* 우측 정보 영역 */
+.product-detail .info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-detail .info h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333333;
+}
+
+.product-detail .info p.price {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ff6600;
+}
+
+.product-detail .info p.description {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #555555;
+}
+
+/* 댓글 입력 폼 */
+.comment-form {
+  margin-top: 2rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.comment-form textarea {
+  flex: 1;
+  height: 3.5rem;
+  padding: 0.75rem;
+  resize: none;
+  border: 1px solid #dddddd;
+  border-radius: 0.5rem;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.comment-form textarea:focus {
+  border-color: #ff6600;
+}
+
+.comment-form .btn-primary {
+  align-self: flex-end;
+}
+
+/* 댓글 리스트 */
+.comment-list {
+  margin-top: 1.5rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.comment-item {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  padding: 1rem;
+}
+.comment-item .header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #777777;
+  margin-bottom: 0.5rem;
+}
+.comment-item .header span.author {
+  font-weight: 500;
+  color: #333333;
+}
+.comment-item p.content {
+  font-size: 1rem;
+  color: #444444;
+  line-height: 1.4;
+}
+/* 예시: 메시지 버블 스타일(기존 CSS에 추가) */
+/* ─────────────────────────────────────────── */
+/* ChatRoomPage 전용 스타일                      */
+/* ─────────────────────────────────────────── */
+
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Container (헤더 아래, 채팅 전체 레이아웃) */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+}
+
+/* ChatRoomHeader */
+.chat-room-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #eeeeee;
+  padding: 1rem;
+}
+
+.chat-room-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-room-subtitle {
+  font-size: 0.9rem;
+  color: #555555;
+  margin-top: 0.25rem;
+}
+
+/* 메시지 리스트 */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: #e5ddd5; /* 연한 배경 */
+}
+
+/* 한 줄 행 */
+.message-row {
+  display: flex;
+}
+.message-row.incoming {
+  justify-content: flex-start;
+}
+.message-row.outgoing {
+  justify-content: flex-end;
+}
+
+/* 말풍선(버블) */
+.message-bubble {
+  max-width: 60%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  position: relative;
+}
+
+.message-bubble.incoming {
+  background-color: #ffffff;
+  color: #333333;
+  border-bottom-left-radius: 0.2rem; /* 말풍선 꼬리 효과 */
+  border-bottom-right-radius: 0.75rem;
+}
+
+.message-bubble.outgoing {
+  background-color: #ff6600;
+  color: #ffffff;
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.2rem;
+}
+
+/* 말풍선 텍스트 */
+.message-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 이미지 메시지 */
+.message-image {
+  width: 100%;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 말풍선 하단 시간 */
+.message-time {
+  font-size: 0.75rem;
+  color: #999999;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* 입력창 전체 래퍼 */
+.chat-input {
+  background-color: #ffffff;
+  border-top: 1px solid #dddddd;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 텍스트 입력 (textarea) */
+.chat-input-text {
+  flex: 1;
+  min-height: 2.5rem;
+  max-height: 5rem;
+  resize: none;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dddddd;
+  border-radius: 0.5rem;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* 숨겨진 파일 입력 */
+.chat-input input[type="file"] {
+  display: none;
+}
+
+/* 사진 첨부 이모티콘(📷) 버튼 */
+.attach-btn {
+  font-size: 1.4rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s;
+}
+.attach-btn:hover {
+  transform: scale(1.1);
+}
+
+/* 전송 버튼 */
+.chat-send-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* ─────────────────────────────────────────── */

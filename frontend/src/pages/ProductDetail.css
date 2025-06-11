@@ -1,0 +1,149 @@
+.product-detail {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: 'Arial', sans-serif;
+}
+
+.product-detail .image-wrapper {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.product-detail .image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-detail .image:hover {
+  transform: scale(1.02);
+}
+
+.product-detail .info {
+  margin-bottom: 20px;
+}
+
+.product-detail h2 {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.product-detail .price {
+  font-weight: bold;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.product-detail .meta {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 16px;
+}
+
+.product-detail .description {
+  font-size: 16px;
+  margin-bottom: 24px;
+}
+
+.product-detail .actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.product-detail button {
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.chat-button {
+  background-color: orange;
+  color: white;
+}
+
+.edit-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.comment-form textarea {
+  width: 100%;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.comment-form button {
+  padding: 8px 14px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.comment-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.comment-list li {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+
+.comment-list li strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.owner-actions {
+  display: flex;
+  gap: 8px; /* ✅ 수정/삭제 사이 간격 */
+  margin-bottom: 8px; /* ✅ 아래 '채팅하기' 버튼과의 간격 */
+}
+
+.comment-item {
+  margin-bottom: 12px;
+}
+
+.reply-list {
+  margin-left: 20px;
+  margin-top: 4px;
+}
+
+.reply-item {
+  font-size: 14px;
+  color: #555;
+}
+
+.reply-btn {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #1976d2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}

@@ -1,0 +1,118 @@
+.chat-room {
+  max-width: 640px;
+  margin: 20px auto;
+  padding: 24px;
+  background: #fff;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.chat-room h2 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background-color: #fdfdfd;
+}
+
+.chat-messages .mine {
+  text-align: right;
+  margin-bottom: 12px;
+}
+
+.chat-messages .theirs {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.chat-messages span {
+  display: inline-block;
+  background: #f1f3f5;
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 70%;
+  word-wrap: break-word;
+  font-size: 14px;
+  color: #333;
+}
+
+.chat-messages img {
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.chat-messages img:hover {
+  transform: scale(1.05);
+}
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chat-input input[type="text"] {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.chat-input input[type="file"] {
+  font-size: 13px;
+}
+
+.chat-input button {
+  background-color: #ff7a00;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.chat-input button:hover {
+  background-color: #e66d00;
+}
+
+.chat-bubble {
+  display: inline-block;
+  background: #f2f2f2;
+  border-radius: 12px;
+  padding: 6px;
+  max-width: 240px;
+  text-align: left;
+}
+
+.chat-bubble img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+.chat-bubble span {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
