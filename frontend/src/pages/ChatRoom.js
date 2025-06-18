@@ -114,6 +114,7 @@ export default function ChatRoom() {
           body: form,
         });
         const data = await res.json();
+        console.log(data);
         fileUrl = data.fileUrl;
       } catch (err) {
         console.error('Upload failed', err);

@@ -7,11 +7,11 @@ import './MyPage.css';
 import { toAbsoluteImageUrl } from '../utils/url';
 
 export default function MyPage() {
-  const [user, setUser]                     = useState(null);
-  const [products, setProducts]             = useState([]);
-  const [page, setPage]                     = useState(0);
-  const size = 3;                            // 한 페이지당 3개
-  const [totalPages, setTotalPages]         = useState(1);
+  const [user, setUser]                         = useState(null);
+  const [products, setProducts]                 = useState([]);
+  const [page, setPage]                         = useState(0);
+  const size                                    = 3; // 한 페이지당 3개
+  const [totalPages, setTotalPages]             = useState(1);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const navigate = useNavigate();
 
@@ -42,9 +42,17 @@ export default function MyPage() {
     })();
   }, [page]);
 
+  // 탈퇴 처리: 로컬은 pw, 소셜은 바로
   const handleWithdraw = async () => {
-    const pw = prompt('비밀번호를 입력해주세요');
-    if (!pw || !window.confirm('정말 탈퇴하시겠습니까?')) return;
+    let confirmed = window.confirm('정말 탈퇴하시겠습니까?');
+    if (!confirmed) return;
+
+    let pw = null;
+    if (user.provider === 'local') {
+      pw = prompt('비밀번호를 입력해주세요');
+      if (!pw) return;
+    }
+
     try {
       await deleteUser(pw);
       localStorage.removeItem('token');
@@ -54,6 +62,7 @@ export default function MyPage() {
     }
   };
 
+  // 비밀번호 변경 제출 (로컬 전용)
   const handlePasswordChangeSubmit = async (e) => {
     e.preventDefault();
     const oldPw = e.target.oldPw.value;
@@ -70,9 +79,7 @@ export default function MyPage() {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric', month: '2-digit', day: '2-digit'
-    });
+    return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
   return (
@@ -111,32 +118,31 @@ export default function MyPage() {
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
           disabled={page === 0}
-        >
-          이전
-        </button>
+        >이전</button>
         <span>{page + 1} / {totalPages}</span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
           disabled={page >= totalPages - 1}
-        >
-          다음
-        </button>
+        >다음</button>
       </div>
 
       {/* 비밀번호 변경 & 탈퇴 */}
       <div className="account-action-section">
-        <button
-          onClick={() => setShowPasswordForm((v) => !v)}
-          className="toggle-password-btn"
-        >
-          {showPasswordForm ? '비밀번호 변경 취소' : '비밀번호 변경'}
-        </button>
+        {user?.provider === 'local' && (
+          <button
+            onClick={() => setShowPasswordForm((v) => !v)}
+            className="toggle-password-btn"
+          >
+            {showPasswordForm ? '비밀번호 변경 취소' : '비밀번호 변경'}
+          </button>
+        )}
         <button onClick={handleWithdraw} className="withdraw-btn small">
           회원 탈퇴
         </button>
       </div>
 
-      {showPasswordForm && (
+      {/* 로컬 회원만 비밀번호 폼 표시 */}
+      {showPasswordForm && user?.provider === 'local' && (
         <form className="password-form" onSubmit={handlePasswordChangeSubmit}>
           <input type="password" name="oldPw" placeholder="현재 비밀번호" required />
           <input type="password" name="newPw" placeholder="새 비밀번호" required />

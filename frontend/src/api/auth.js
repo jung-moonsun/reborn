@@ -9,3 +9,5 @@ export const signup = (email, password, nickname) =>
 export const getProfile = () =>
   axios.get('/users/me');
 
+export const kakaoCallback = (code) =>
+  axios.get('/users/oauth/kakao/callback', { params: { code } });

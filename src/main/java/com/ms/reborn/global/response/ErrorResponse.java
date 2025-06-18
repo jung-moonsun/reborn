@@ -3,6 +3,7 @@ package com.ms.reborn.global.response;
 import com.ms.reborn.global.exception.ErrorCode;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Getter
 @Builder
@@ -16,6 +17,7 @@ public class ErrorResponse {
     private String message;
     private String path;
     private LocalDateTime timestamp;
+    private Map<String, String> validation;  // Field validation errors
 
     public static ErrorResponse of(ErrorCode errorCode, String path) {
         return ErrorResponse.builder()

@@ -40,7 +40,7 @@ public class ProductService {
 
         if (images != null) {
             for (MultipartFile image : images) {
-                var url = fileStorageService.storeFile(image, "products");
+                var url = fileStorageService.storeFile(image, "product");
                 product.getImages().add(
                         ProductImage.builder()
                                 .imageUrl(url)

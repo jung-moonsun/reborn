@@ -25,10 +25,29 @@ public class UserService {
 
     @Transactional
     public Long signup(UserRequest req) {
-        if (userRepository.existsByEmailAndDeletedFalse(req.getEmail()))
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        if (userRepository.existsByNicknameAndDeletedFalse(req.getNickname()))
+        Optional<User> deletedUserOpt = userRepository.findByEmail(req.getEmail());
+
+        if (deletedUserOpt.isPresent()) {
+            User user = deletedUserOpt.get();
+
+            if (!user.isDeleted()) {
+                throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            }
+
+            if (userRepository.existsByNicknameAndDeletedFalse(req.getNickname())) {
+                throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+            }
+
+            // ✅ 복구
+            user.setDeleted(false);
+            user.setNickname(req.getNickname());
+            user.setPassword(passwordEncoder.encode(req.getPassword()));
+            return userRepository.save(user).getId();
+        }
+
+        if (userRepository.existsByNicknameAndDeletedFalse(req.getNickname())) {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+        }
 
         String hash = passwordEncoder.encode(req.getPassword());
         User user = User.builder()
@@ -61,7 +80,6 @@ public class UserService {
     public void withdraw(Long userId, String pw) {
         User user = getActiveUser(userId);
 
-        // 소셜 로그인 유저는 비번 체크 건너뜀
         if (user.getProvider() == null) {
             if (!passwordEncoder.matches(pw, user.getPassword())) {
                 throw new IllegalArgumentException("비밀번호 불일치");
@@ -78,8 +96,7 @@ public class UserService {
     }
 
     public User findUserEvenIfDeleted(String email) {
-        return userRepository.findByEmail(email)
-                .orElse(null);
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     public String login(LoginRequest req) {
@@ -91,22 +108,17 @@ public class UserService {
         return jwtUtil.generateToken(user.getEmail(), user.getId());
     }
 
-    // ❗ 공통적으로 탈퇴 안 한 유저만 가져오게
     public User getActiveUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
-        if (user.isDeleted()) {
-            throw new IllegalArgumentException("탈퇴한 계정입니다.");
-        }
-        return user;
+        return userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new IllegalArgumentException("탈퇴한 계정입니다."));
     }
 
     @Transactional
     public User findOrCreateOAuthUser(String provider, String providerId, String email) {
         return userRepository.findByProviderAndProviderId(provider, providerId)
                 .orElseGet(() -> {
-                    // ✅ 탈퇴 유저 복구
                     Optional<User> deletedUserOpt = userRepository.findByEmail(email);
+
                     if (deletedUserOpt.isPresent()) {
                         User deletedUser = deletedUserOpt.get();
                         deletedUser.setDeleted(false);
@@ -114,13 +126,13 @@ public class UserService {
                         deletedUser.setProviderId(providerId);
                         deletedUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                         userRepository.save(deletedUser);
+                        userRepository.flush();
 
-                        // ✅ 여기 중요! 복구된 유저 다시 조회해서 return
+                        // ✅ 다시 조회해서 최신 상태 return (isDeleted = false 확실히 반영된 객체)
                         return userRepository.findByEmailAndDeletedFalse(email)
                                 .orElseThrow(() -> new RuntimeException("복구 후 유저 조회 실패"));
                     }
 
-                    // ✅ 새 유저
                     User newUser = User.builder()
                             .email(email)
                             .nickname(provider + "_" + providerId)
@@ -129,9 +141,8 @@ public class UserService {
                             .providerId(providerId)
                             .deleted(false)
                             .build();
+
                     return userRepository.save(newUser);
                 });
     }
-
-
 }
