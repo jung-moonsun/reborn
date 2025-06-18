@@ -5,6 +5,10 @@ import com.ms.reborn.domain.user.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,18 +17,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
@@ -50,13 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = parseJwt(request);
 
             if (token != null) {
-                String email = jwtUtil.validateAndGetEmail(token);  // 서명검증+만료검증 + subject 꺼내기
-                logger.info("JWT 검증 성공, subject(이메일)={}", email);
+                Long userId = jwtUtil.getUserId(token); // ✅ userId 추출
+                logger.info("JWT 검증 성공, userId={}", userId);
 
-                User user = userService.findByEmail(email);
+                User user = userService.getActiveUser(userId); // ✅ soft delete 고려
                 if (user == null) {
-                    logger.error("JWT 인증 실패: 존재하지 않는 유저 - {}", email);
-                    throw new IllegalArgumentException("존재하지 않는 사용자: " + email);
+                    logger.error("JWT 인증 실패: 존재하지 않는 유저 - userId={}", userId);
+                    throw new IllegalArgumentException("존재하지 않는 사용자: " + userId);
                 }
 
                 // SecurityContext에 인증 정보 저장
@@ -70,37 +70,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                // 요청 속성에 userId 추가 (컨트롤러에서 필요하다면 꺼내써도 된다)
-                request.setAttribute("userId", user.getId());
+                request.setAttribute("userId", userId);
             }
 
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            logger.error("JWT 만료됨: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"토큰 만료: " + e.getMessage() + "\"}");
+            handleError(response, "JWT 만료됨", e);
         } catch (SignatureException e) {
-            logger.error("JWT 서명 불일치: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"잘못된 토큰 서명: " + e.getMessage() + "\"}");
+            handleError(response, "JWT 서명 불일치", e);
         } catch (MalformedJwtException e) {
-            logger.error("JWT 형식 오류: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"잘못된 토큰 형식: " + e.getMessage() + "\"}");
+            handleError(response, "JWT 형식 오류", e);
         } catch (IllegalArgumentException e) {
-            logger.error("JWT 인증 오류: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+            handleError(response, "JWT 인증 오류", e);
         } catch (Exception e) {
-            logger.error("알 수 없는 인증 오류: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\": \"Unauthorized: " + e.getMessage() + "\"}");
+            handleError(response, "알 수 없는 인증 오류", e);
         }
     }
 
@@ -110,5 +94,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return headerAuth.substring(7);
         }
         return null;
+    }
+
+    private void handleError(HttpServletResponse response, String message, Exception e) throws IOException {
+        logger.error("{}: {}", message, e.getMessage());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"error\": \"" + message + ": " + e.getMessage() + "\"}");
     }
 }

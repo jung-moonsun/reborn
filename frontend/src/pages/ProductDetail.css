@@ -124,26 +124,70 @@
   margin-bottom: 8px; /* ✅ 아래 '채팅하기' 버튼과의 간격 */
 }
 
+/* ✅ depth에 따른 스타일링 전부 제거 */
 .comment-item {
   margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
 }
 
+/* ✅ depth 관련 스타일 무효화 (아예 지워도 됨) */
+.comment-item.depth-1,
+.comment-item.depth-2,
+.comment-item.depth-3,
+.comment-item.depth-99 {
+  margin-left: 0;
+}
+
+/* ✅ 답글 리스트 들여쓰기 없애기 */
 .reply-list {
-  margin-left: 20px;
-  margin-top: 4px;
+  list-style: none;
+  padding-left: 0;
+  margin: 8px 0 0 0;
+  border-left: none; /* 구분선도 제거 */
 }
 
+/* ✅ reply-item 클래스 안 쓰면 이건 삭제 */
 .reply-item {
-  font-size: 14px;
-  color: #555;
+  margin-bottom: 8px;
+  padding-left: 0;
+  border-left: none;
 }
 
+/* reply-btn 여백 유지 */
 .reply-btn {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #1976d2;
+  margin-left: 8px;
   background: none;
   border: none;
+  color: #007bff;
   cursor: pointer;
-  padding: 0;
+  font-size: 12px;
+}
+
+.reply-btn:hover {
+  text-decoration: underline;
+}
+
+.comment-edit-btn,
+.comment-delete-btn {
+  font-size: 13px;
+  padding: 4px 10px;
+  margin-right: 1px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  color: #333;
+  transition: background-color 0.2s;
+  margin-left: 6px;
+}
+
+.comment-edit-btn:hover {
+  background-color: #e3f2fd;
+}
+
+.comment-delete-btn:hover {
+  background-color: #ffebee;
+  color: #d32f2f;
 }

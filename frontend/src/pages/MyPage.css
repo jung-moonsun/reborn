@@ -29,8 +29,9 @@ h3 {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 180px));
   gap: 16px;
+  justify-content: center; /* 가운데 정렬 */
 }
 
 .product-card {
@@ -67,6 +68,33 @@ h3 {
   font-size: 12px;
   color: #777;
   margin-top: 4px;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pagination span {
+  font-size: 14px;
 }
 
 /* 👉 회원탈퇴 + 비번변경 버튼 수평 배치 */
@@ -149,4 +177,8 @@ h3 {
 
 .password-form button:hover {
   background-color: #096dd9;
+}
+
+.my-product {
+text-align: center
 }

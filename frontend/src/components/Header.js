@@ -4,7 +4,7 @@ import { getProfile } from '../api/auth';
 import { getUnreadCount } from '../api/chatRoom';
 import './Header.css';
 
-export default function Header() {
+export default function Header({ isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(null);
@@ -13,6 +13,10 @@ export default function Header() {
 
   useEffect(() => {
     const fetchProfileAndUnread = async () => {
+      if (!isLoggedIn) {
+        setUser(null);
+        return;
+      }
       try {
         const res = await getProfile();
         setUser(res.data);
@@ -20,7 +24,7 @@ export default function Header() {
         const localFlag = localStorage.getItem('chatRead');
         if (localFlag === 'true') {
           setUnreadCount(0);
-          localStorage.removeItem('chatRead'); // 한 번 보고 나면 제거
+          localStorage.removeItem('chatRead');
         } else {
           const unreadRes = await getUnreadCount(res.data.id);
           setUnreadCount(unreadRes.data);
@@ -31,10 +35,11 @@ export default function Header() {
       }
     };
     fetchProfileAndUnread();
-  }, [location]);
+  }, [isLoggedIn, location.key]); // isLoggedIn 바뀌면 다시 불러옴
 
   const logout = () => {
     localStorage.removeItem('token');
+    setIsLoggedIn(false); // 리렌더링 트리거
     setUser(null);
     setUnreadCount(0);
     navigate('/');
@@ -65,12 +70,10 @@ export default function Header() {
             <span>{user.nickname}님</span>
             <Link to="/chat" className="chat-link">
               채팅
-              {unreadCount > 0 && (
-                <span className="badge">{unreadCount}</span>
-              )}
+              {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
             </Link>
             <Link to="/create">상품 등록</Link>
-            <Link to="/mypage">마이페이지</Link> {/* 추가 */}
+            <Link to="/mypage">마이페이지</Link>
             <button onClick={logout}>로그아웃</button>
           </>
         ) : (

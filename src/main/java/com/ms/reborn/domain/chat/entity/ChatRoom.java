@@ -38,4 +38,7 @@ public class ChatRoom {
     @Column(nullable = false)
     @Builder.Default
     private boolean exitedBySeller = false;
+
+    private LocalDateTime buyerExitedAt;
+    private LocalDateTime sellerExitedAt;
 }

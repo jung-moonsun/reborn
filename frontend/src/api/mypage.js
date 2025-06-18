@@ -1,19 +1,26 @@
 // src/api/mypage.js
 import axios from './axios';
-import { getProfile } from './auth'; // ✅ 이거 추가
+import { getProfile } from './auth';
 
-export const getMyProducts = () =>
-  axios.get('/products/me');
-
-export const deleteUser = async (pw) => {
-  const profile = await getProfile();
-  const userId = profile.data.id;
-  return axios.delete(`/users/${userId}`, {  // ✅ instance → axios
-    params: { pw }
+// '/products/me' 로만 요청 (axios가 baseURL에 '/api'를 붙여 줍니다)
+export function getMyProducts(page = 0, size = 3) {
+  return axios.get('/products/me', {
+    params: { page, size },
   });
-};
+}
 
-export const changePassword = (userId, oldPw, newPw) =>
-  axios.put(`/users/${userId}/password`, null, {
-    params: { oldPw, newPw },
+// 이하 삭제·비번 변경은 그대로
+export async function deleteUser(pw) {
+  const { data: profile } = await getProfile();
+  return axios.delete(`/users/${profile.id}`, {
+    params: { pw },
   });
+}
+
+export function changePassword(userId, oldPw, newPw) {
+  return axios.put(
+    `/users/${userId}/password`,
+    null,
+    { params: { oldPw, newPw } }
+  );
+}

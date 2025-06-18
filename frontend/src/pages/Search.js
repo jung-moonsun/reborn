@@ -2,21 +2,22 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { searchProducts } from '../api/product';
 import { toAbsoluteImageUrl } from '../utils/url';
-import './Home.css'; // ✅ 홈 카드 스타일 그대로 사용
+import './Home.css';
 
 export default function Search() {
   const [params] = useSearchParams();
-  const keyword = params.get('keyword');
+  const keyword = params.get('keyword') || '';
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await searchProducts(keyword);
-        setResults(res.data.content || []);
+        // page=0, size=20 명시
+        const res = await searchProducts(keyword, 0, 20);
+        setResults(res.data.data.content || []);
       } catch (e) {
-        console.error(e);
+        console.error('검색 API 오류', e);
       }
     };
     if (keyword) fetch();
@@ -24,7 +25,7 @@ export default function Search() {
 
   return (
     <div className="home-container">
-      <h2>🔍 "{keyword}" 검색 결과</h2>
+      <h2 style={{ textAlign: 'center' }}>🔍 “{keyword}” 검색 결과</h2>
       {results.length > 0 ? (
         <div className="product-grid">
           {results.map((p) => (
@@ -43,7 +44,7 @@ export default function Search() {
           ))}
         </div>
       ) : (
-        <p>검색 결과가 없습니다.</p>
+        <p style={{ textAlign: 'center' }}>검색 결과가 없습니다.</p>
       )}
     </div>
   );

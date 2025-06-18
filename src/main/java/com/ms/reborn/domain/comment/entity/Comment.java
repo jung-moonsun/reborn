@@ -39,7 +39,7 @@ public class Comment {
     @JoinColumn(name = "parent_id")
     private Comment parent; // 대댓글
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();
 
     @PrePersist

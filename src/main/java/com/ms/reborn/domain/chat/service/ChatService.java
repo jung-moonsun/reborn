@@ -1,5 +1,7 @@
 package com.ms.reborn.domain.chat.service;
 
+import com.ms.reborn.global.exception.CustomException;
+import com.ms.reborn.global.exception.ErrorCode;
 import com.ms.reborn.domain.chat.dto.ChatMessageRequest;
 import com.ms.reborn.domain.chat.dto.ChatMessageResponse;
 import com.ms.reborn.domain.chat.entity.ChatMessage;
@@ -33,17 +35,31 @@ public class ChatService {
     @Transactional
     public ChatMessageResponse saveMessage(ChatMessageRequest request) {
         ChatRoom chatRoom = chatRoomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> new RuntimeException("채팅방 없음"));
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
 
         User sender = userRepository.findById(request.getSenderId())
-                .orElseThrow(() -> new RuntimeException("보낸 사람 없음"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        User receiver = chatRoom.getSeller().getId().equals(sender.getId()) ?
-                chatRoom.getBuyer() : chatRoom.getSeller();
+        if (!sender.getId().equals(chatRoom.getBuyer().getId()) &&
+                !sender.getId().equals(chatRoom.getSeller().getId())) {
+            throw new CustomException(ErrorCode.CHAT_ACCESS_DENIED);
+        }
 
-        // 메시지 타입별 검증
+        if (sender.isDeleted()) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        User receiver = sender.getId().equals(chatRoom.getSeller().getId())
+                ? chatRoom.getBuyer() : chatRoom.getSeller();
+
         if (request.getMessageType() == MessageType.IMAGE && StringUtils.isBlank(request.getFileUrl())) {
-            throw new RuntimeException("이미지 메시지는 fileUrl 필수");
+            throw new CustomException(ErrorCode.IMAGE_MESSAGE_NEEDS_URL);
+        }
+
+        if (receiver.getId().equals(chatRoom.getBuyer().getId()) && chatRoom.isExitedByBuyer()) {
+            chatRoom.setExitedByBuyer(false);
+        } else if (receiver.getId().equals(chatRoom.getSeller().getId()) && chatRoom.isExitedBySeller()) {
+            chatRoom.setExitedBySeller(false);
         }
 
         ChatMessage message = ChatMessage.builder()
@@ -62,10 +78,12 @@ public class ChatService {
         chatRoom.setLastMessageAt(message.getCreatedAt());
         chatRoomRepository.save(chatRoom);
 
-        ChatMessageResponse response = ChatMessageResponse.from(message);
-//        messagingTemplate.convertAndSend("/queue/notify/" + receiver.getId(), response);
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + request.getRoomId(),
+                ChatMessageResponse.from(message)
+        );
 
-        return response;
+        return ChatMessageResponse.from(message);
     }
 
     @Transactional(readOnly = true)
@@ -78,7 +96,7 @@ public class ChatService {
     @Transactional
     public void markMessageAsRead(Long messageId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("메시지 없음"));
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_MESSAGE_NOT_FOUND));
         if (!message.isRead()) {
             message.setRead(true);
             chatMessageRepository.save(message);

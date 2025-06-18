@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -57,8 +60,14 @@ public class UserService {
     @Transactional
     public void withdraw(Long userId, String pw) {
         User user = getActiveUser(userId);
-        if (!passwordEncoder.matches(pw, user.getPassword()))
-            throw new IllegalArgumentException("비밀번호 불일치");
+
+        // 소셜 로그인 유저는 비번 체크 건너뜀
+        if (user.getProvider() == null) {
+            if (!passwordEncoder.matches(pw, user.getPassword())) {
+                throw new IllegalArgumentException("비밀번호 불일치");
+            }
+        }
+
         user.setDeleted(true);
         userRepository.save(user);
     }
@@ -68,8 +77,8 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    public User findByEmail(String email) {
-        return userRepository.findByEmailAndDeletedFalse(email)
+    public User findUserEvenIfDeleted(String email) {
+        return userRepository.findByEmail(email)
                 .orElse(null);
     }
 
@@ -83,7 +92,7 @@ public class UserService {
     }
 
     // ❗ 공통적으로 탈퇴 안 한 유저만 가져오게
-    private User getActiveUser(Long userId) {
+    public User getActiveUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
         if (user.isDeleted()) {
@@ -91,4 +100,38 @@ public class UserService {
         }
         return user;
     }
+
+    @Transactional
+    public User findOrCreateOAuthUser(String provider, String providerId, String email) {
+        return userRepository.findByProviderAndProviderId(provider, providerId)
+                .orElseGet(() -> {
+                    // ✅ 탈퇴 유저 복구
+                    Optional<User> deletedUserOpt = userRepository.findByEmail(email);
+                    if (deletedUserOpt.isPresent()) {
+                        User deletedUser = deletedUserOpt.get();
+                        deletedUser.setDeleted(false);
+                        deletedUser.setProvider(provider);
+                        deletedUser.setProviderId(providerId);
+                        deletedUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                        userRepository.save(deletedUser);
+
+                        // ✅ 여기 중요! 복구된 유저 다시 조회해서 return
+                        return userRepository.findByEmailAndDeletedFalse(email)
+                                .orElseThrow(() -> new RuntimeException("복구 후 유저 조회 실패"));
+                    }
+
+                    // ✅ 새 유저
+                    User newUser = User.builder()
+                            .email(email)
+                            .nickname(provider + "_" + providerId)
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .provider(provider)
+                            .providerId(providerId)
+                            .deleted(false)
+                            .build();
+                    return userRepository.save(newUser);
+                });
+    }
+
+
 }

@@ -6,52 +6,60 @@ import com.ms.reborn.domain.product.dto.ProductResponse;
 import com.ms.reborn.domain.product.entity.Product;
 import com.ms.reborn.domain.product.entity.ProductImage;
 import com.ms.reborn.domain.product.repository.ProductRepository;
-import com.ms.reborn.domain.user.entity.User;
 import com.ms.reborn.domain.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.ms.reborn.global.exception.CustomException;
+import com.ms.reborn.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ProductService {
-
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public Long addProduct(ProductRequest req, Long userId, List<MultipartFile> images, FileStorageService fileStorageService) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-        Product product = Product.builder()
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        var product = Product.builder()
                 .user(user)
                 .title(req.getTitle())
                 .description(req.getDescription())
                 .price(req.getPrice())
                 .build();
 
-        if (images != null && !images.isEmpty()) {
+        if (images != null) {
             for (MultipartFile image : images) {
-                String url = fileStorageService.storeFile(image, "products");
-                product.getImages().add(ProductImage.builder().imageUrl(url).product(product).build());
+                var url = fileStorageService.storeFile(image, "products");
+                product.getImages().add(
+                        ProductImage.builder()
+                                .imageUrl(url)
+                                .product(product)
+                                .build()
+                );
             }
         }
-
         productRepository.save(product);
         return product.getId();
     }
 
     @Transactional
     public void updateProduct(Long productId, ProductRequest req, Long userId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("상품 없음"));
-        if (!product.getUser().getId().equals(userId))
-            throw new RuntimeException("수정 권한 없음");
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (!product.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
         product.setTitle(req.getTitle());
         product.setDescription(req.getDescription());
         product.setPrice(req.getPrice());
@@ -60,31 +68,39 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long productId, Long userId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("상품 없음"));
-        if (!product.getUser().getId().equals(userId))
-            throw new RuntimeException("삭제 권한 없음");
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (!product.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
         productRepository.delete(product);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductResponse getProduct(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("상품 없음"));
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         return ProductResponse.from(product);
     }
 
-    @Transactional
-    public Page<ProductResponse> searchProducts(String keyword, int page, int size) {
-        Page<Product> products = productRepository
-                .findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, PageRequest.of(page, size));
-        return products.map(ProductResponse::from);
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> listProducts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return productRepository.findAll(pageable)
+                .map(ProductResponse::from);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getMyProducts(Long userId, int page, int size) {
-        Page<Product> products = productRepository
-                .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(page, size));
-        return products.map(ProductResponse::from);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return productRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                .map(ProductResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> searchProducts(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return productRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
+                .map(ProductResponse::from);
     }
 }

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class ChatRoomResponse {
     private Long id;
     private Long productId;
+    private String productTitle;
     private Long buyerId;
     private Long sellerId;
     private LocalDateTime createdAt;
@@ -26,6 +27,7 @@ public class ChatRoomResponse {
         return ChatRoomResponse.builder()
                 .id(room.getId())
                 .productId(room.getProduct().getId())
+                .productTitle(room.getProduct().getTitle())
                 .buyerId(room.getBuyer().getId())
                 .sellerId(room.getSeller().getId())
                 .createdAt(room.getCreatedAt())

@@ -8,7 +8,11 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) config.headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete config.headers['Authorization']; // 🔥 토큰 없으면 헤더 삭제
+    }
     return config;
   },
   (err) => Promise.reject(err)
@@ -17,7 +21,6 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (res) => res,
   (error) => {
-    // ⛔ 자동 로그아웃 제거된 버전
     const message = error?.response?.data?.message || error.message;
     console.warn('axios error:', message);
     return Promise.reject(error);

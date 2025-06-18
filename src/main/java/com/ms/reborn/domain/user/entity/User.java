@@ -25,6 +25,12 @@ public class User {
     @Column(nullable = false, unique = true, length = 30)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false; // ✅ soft delete
+
+    @Column
+    private String provider;
+
+    @Column
+    private String providerId;
 }

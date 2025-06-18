@@ -18,11 +18,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(
+                        "http://localhost:3000",  // ← 프론트 포트 추가!
                         "http://localhost:63342",
                         "http://localhost:8080",
-                        "http://localhost:3001"     // ← 추가
+                        "http://localhost:3001"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
                 .allowCredentials(true);
     }
 

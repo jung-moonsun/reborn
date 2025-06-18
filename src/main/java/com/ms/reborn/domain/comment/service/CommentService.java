@@ -4,71 +4,101 @@ import com.ms.reborn.domain.comment.dto.CommentRequest;
 import com.ms.reborn.domain.comment.dto.CommentResponse;
 import com.ms.reborn.domain.comment.entity.Comment;
 import com.ms.reborn.domain.comment.repository.CommentRepository;
-import com.ms.reborn.domain.product.entity.Product;
 import com.ms.reborn.domain.product.repository.ProductRepository;
-import com.ms.reborn.domain.user.entity.User;
 import com.ms.reborn.domain.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.ms.reborn.global.exception.CustomException;
+import com.ms.reborn.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@RequiredArgsConstructor
+import java.time.LocalDateTime;
+import java.util.*;
+
 @Service
+@RequiredArgsConstructor
 public class CommentService {
-
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
     @Transactional
     public void addComment(CommentRequest req, Long userId) {
-        Product product = productRepository.findById(req.getProductId())
-                .orElseThrow(() -> new RuntimeException("상품 없음"));
-        User writer = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("작성자 없음"));
+        var product = productRepository.findById(req.getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        var writer = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Comment parent = null;
         if (req.getParentId() != null) {
             parent = commentRepository.findById(req.getParentId())
-                    .orElseThrow(() -> new RuntimeException("부모 댓글 없음"));
+                    .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
         }
 
-        Comment comment = Comment.builder()
+        var comment = Comment.builder()
                 .product(product)
                 .writer(writer)
                 .content(req.getContent())
                 .parent(parent)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         commentRepository.save(comment);
     }
 
     @Transactional
-    public void updateComment(Long commentId, String newContent, Long userId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글 없음"));
-        if (!comment.getWriter().getId().equals(userId))
-            throw new RuntimeException("수정 권한 없음");
-        comment.setContent(newContent);
+    public void updateComment(Long commentId, String content, Long userId) {
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+        if (!comment.getWriter().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+        comment.setContent(content);
         commentRepository.save(comment);
     }
 
     @Transactional
     public void deleteComment(Long commentId, Long userId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글 없음"));
-        if (!comment.getWriter().getId().equals(userId))
-            throw new RuntimeException("삭제 권한 없음");
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+        if (!comment.getWriter().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
         commentRepository.delete(comment);
     }
 
-    @Transactional
-    public Page<CommentResponse> getComments(Long productId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Comment> comments = commentRepository.findByProductIdAndParentIsNull(productId, pageable);
-        return comments.map(CommentResponse::from);
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsAsTree(Long productId) {
+        List<Comment> flatList = commentRepository.findAllByProductId(productId, Sort.by("createdAt"));
+
+        Map<Long, CommentResponse> map = new HashMap<>();
+        List<CommentResponse> roots = new ArrayList<>();
+
+        // 1. 모든 댓글을 DTO로 변환 후 Map에 저장
+        for (Comment c : flatList) {
+            map.putIfAbsent(c.getId(), CommentResponse.from(c));
+        }
+
+        // 2. 부모-자식 관계 구성
+        for (Comment c : flatList) {
+            Long parentId = c.getParent() != null ? c.getParent().getId() : null;
+            CommentResponse current = map.get(c.getId());
+
+            if (parentId == null) {
+                roots.add(current);
+            } else {
+                CommentResponse parent = map.get(parentId);
+                if (parent != null) {
+                    boolean exists = parent.getReplies().stream()
+                            .anyMatch(r -> r.getId().equals(current.getId()));
+                    if (!exists) {
+                        parent.getReplies().add(current);
+                    }
+                }
+            }
+        }
+
+        return roots;
     }
 }
