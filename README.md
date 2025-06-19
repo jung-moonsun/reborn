@@ -1,4 +1,4 @@
-# Reborn - 중고거래 플랫폼
+# Reborn Market - 중고거래 플랫폼
 
 Spring Boot와 React 기반의 실시간 중고거래 플랫폼입니다.
 
@@ -8,12 +8,12 @@ JWT 로그인, 카카오 소셜 로그인, 상품 등록/조회, 실시간 채�
 
 ## 🔧 기술 스택
 
-| 영역       | 기술                                                            
+| 영역       | 기술                                                            |
 | -------- | ------------------------------------------------------------- |
 | Backend  | Spring Boot, Spring Security, JWT, OAuth2 (Kakao), JPA, MySQL |
 | Infra    | AWS EC2, S3, Swagger, WebSocket                               |
 | Frontend | React, React Router, Axios                                    |
-| 기타       | CI/CD, DTO/Entity 계층 분리 구조                              |       
+| 기타       | CI/CD, DTO/Entity 계층 분리 구조                                    |
 
 ---
 
@@ -52,7 +52,7 @@ JWT 로그인, 카카오 소셜 로그인, 상품 등록/조회, 실시간 채�
 
 ## 📚 API 명세서 (Swagger)
 
-🔗http://localhost:8080/swagger-ui/index.html
+🔗 [Swagger UI 접속하기](http://localhost:8080/swagger-ui/index.html)
 
 * JWT가 필요한 API는 Authorize 버튼을 통해 토큰 입력 후 테스트 가능
 
@@ -60,13 +60,16 @@ JWT 로그인, 카카오 소셜 로그인, 상품 등록/조회, 실시간 채�
 
 ## 🛠 실행 방법
 
+```bash
 # 백엔드
 ./gradlew build
 
+
 # 프론트엔드
 cd frontend
+npm install
 npm start
-
+```
 
 * 백엔드: [http://localhost:8080](http://localhost:8080)
 * 프론트엔드: [http://localhost:3000](http://localhost:3000)
@@ -75,7 +78,7 @@ npm start
 
 ## 📌 프로젝트 특징 요약
 
-* 개인 진행 프로젝트
-* 프론트 + 백엔드 + 배포 + 문서화
-* WebSocket, JWT, OAuth2 등 실무에서 쓰이는 기술로 설계
+* 개인 프로젝트
+* 프론트 + 백엔드 + 배포 + 문서화까지 모든 과정 직접 진행
+* WebSocket, JWT, OAuth2 등 실무에서 쓰이는 기술 설계
 * 계층 분리, 책임 분산, 유지보수 가능한 구조 설계
