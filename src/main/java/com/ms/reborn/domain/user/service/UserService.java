@@ -1,5 +1,6 @@
 package com.ms.reborn.domain.user.service;
 
+import com.ms.reborn.domain.product.repository.ProductRepository;
 import com.ms.reborn.domain.user.dto.LoginRequest;
 import com.ms.reborn.domain.user.dto.UserRequest;
 import com.ms.reborn.domain.user.dto.UserResponse;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -86,6 +88,10 @@ public class UserService {
             }
         }
 
+        // ✅ 유저의 상품 먼저 삭제
+        productRepository.deleteByUserId(userId);
+
+        // ✅ 유저 soft delete
         user.setDeleted(true);
         userRepository.save(user);
     }

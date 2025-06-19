@@ -7,15 +7,14 @@ import './MyPage.css';
 import { toAbsoluteImageUrl } from '../utils/url';
 
 export default function MyPage() {
-  const [user, setUser]                         = useState(null);
-  const [products, setProducts]                 = useState([]);
-  const [page, setPage]                         = useState(0);
-  const size                                    = 3; // 한 페이지당 3개
-  const [totalPages, setTotalPages]             = useState(1);
+  const [user, setUser] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(0);
+  const size = 3;
+  const [totalPages, setTotalPages] = useState(1);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const navigate = useNavigate();
 
-  // 1) 프로필 한 번만 로드
   useEffect(() => {
     (async () => {
       try {
@@ -27,7 +26,6 @@ export default function MyPage() {
     })();
   }, []);
 
-  // 2) page 바뀔 때마다 내 상품 로드
   useEffect(() => {
     (async () => {
       try {
@@ -42,13 +40,13 @@ export default function MyPage() {
     })();
   }, [page]);
 
-  // 탈퇴 처리: 로컬은 pw, 소셜은 바로
   const handleWithdraw = async () => {
+    const isLocal = !user?.provider || user.provider === 'local';
     let confirmed = window.confirm('정말 탈퇴하시겠습니까?');
     if (!confirmed) return;
 
     let pw = null;
-    if (user.provider === 'local') {
+    if (isLocal) {
       pw = prompt('비밀번호를 입력해주세요');
       if (!pw) return;
     }
@@ -62,7 +60,6 @@ export default function MyPage() {
     }
   };
 
-  // 비밀번호 변경 제출 (로컬 전용)
   const handlePasswordChangeSubmit = async (e) => {
     e.preventDefault();
     const oldPw = e.target.oldPw.value;
@@ -82,53 +79,56 @@ export default function MyPage() {
     return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
+  const isLocal = !user?.provider || user.provider === 'local';
+
   return (
     <div className="mypage-container">
-      {/* header */}
       <div className="mypage-header">
         <h2>{user?.nickname}님의 마이페이지</h2>
         <p className="email">{user?.email}</p>
       </div>
 
-      {/* 내가 올린 상품 */}
       <h3 className="my-product">내가 올린 상품</h3>
       <div className="product-grid">
-        {products.length
-          ? products.map((p) => (
-              <div
-                key={p.id}
-                className="product-card"
-                onClick={() => navigate(`/product/${p.id}`)}
-              >
-                <img
-                  src={toAbsoluteImageUrl(p.imageUrls?.[0])}
-                  alt={p.title}
-                />
-                <h3>{p.title}</h3>
-                <p>{p.price.toLocaleString()}원</p>
-                <p className="meta">{formatDate(p.createdAt)}</p>
-              </div>
-            ))
-          : <p>등록된 상품이 없습니다.</p>
-        }
+        {products.length ? (
+          products.map((p) => (
+            <div
+              key={p.id}
+              className="product-card"
+              onClick={() => navigate(`/product/${p.id}`)}
+            >
+              <img
+                src={toAbsoluteImageUrl(p.imageUrls?.[0])}
+                alt={p.title}
+              />
+              <h3>{p.title}</h3>
+              <p>{p.price.toLocaleString()}원</p>
+              <p className="meta">{formatDate(p.createdAt)}</p>
+            </div>
+          ))
+        ) : (
+          <p>등록된 상품이 없습니다.</p>
+        )}
       </div>
 
-      {/* 페이지네이션 */}
       <div className="pagination">
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
           disabled={page === 0}
-        >이전</button>
+        >
+          이전
+        </button>
         <span>{page + 1} / {totalPages}</span>
         <button
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
           disabled={page >= totalPages - 1}
-        >다음</button>
+        >
+          다음
+        </button>
       </div>
 
-      {/* 비밀번호 변경 & 탈퇴 */}
       <div className="account-action-section">
-        {user?.provider === 'local' && (
+        {isLocal && (
           <button
             onClick={() => setShowPasswordForm((v) => !v)}
             className="toggle-password-btn"
@@ -141,8 +141,7 @@ export default function MyPage() {
         </button>
       </div>
 
-      {/* 로컬 회원만 비밀번호 폼 표시 */}
-      {showPasswordForm && user?.provider === 'local' && (
+      {showPasswordForm && isLocal && (
         <form className="password-form" onSubmit={handlePasswordChangeSubmit}>
           <input type="password" name="oldPw" placeholder="현재 비밀번호" required />
           <input type="password" name="newPw" placeholder="새 비밀번호" required />

@@ -11,4 +11,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 내 상품만
     Page<Product> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    void deleteByUserId(Long userId);
 }
