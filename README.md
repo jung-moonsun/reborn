@@ -1,4 +1,4 @@
-# Reborn Market - 중고거래 플랫폼
+# Reborn - 중고거래 플랫폼
 
 Spring Boot와 React 기반의 실시간 중고거래 플랫폼입니다.
 
