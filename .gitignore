@@ -38,3 +38,6 @@ out/
 
 # Spring 민감 정보
 src/main/resources/application.yml
+
+### 📁 업로드 제외 ###
+uploads/

@@ -21,13 +21,13 @@ public class Product {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user; // 상품 등록자
+    private User user;
 
     @Column(nullable = false, length = 100)
     private String title;
 
     @Column(nullable = false, length = 2000)
-    private String description; // ✅ 변경된 필드명
+    private String description;
 
     @Column(nullable = false)
     private int price;
@@ -39,7 +39,7 @@ public class Product {
     private LocalDateTime createdAt;
 
     @Column
-    private LocalDateTime updatedAt; // ✅ 수정시간 추가
+    private LocalDateTime updatedAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

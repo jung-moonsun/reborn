@@ -21,10 +21,10 @@ public class Comment {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Product product; // 댓글이 달리는 대상(게시글, 상품 등)
+    private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // ✅ writer → user_id로 연결
+    @JoinColumn(name = "user_id")
     private User writer;
 
     @Column(nullable = false, length = 500)
@@ -33,11 +33,11 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @Column
-    private LocalDateTime updatedAt; // ✅ 수정 시간
+    private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private Comment parent; // 대댓글
+    private Comment parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();

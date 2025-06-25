@@ -19,7 +19,7 @@ public class ProductResponse {
     private String description;
     private int price;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt; // ✅ 추가
+    private LocalDateTime updatedAt;
     private Long userId;
     private String userNickname;
     private List<String> imageUrls;
@@ -31,7 +31,7 @@ public class ProductResponse {
                 .description(p.getDescription())
                 .price(p.getPrice())
                 .createdAt(p.getCreatedAt())
-                .updatedAt(p.getUpdatedAt()) // ✅ 추가
+                .updatedAt(p.getUpdatedAt())
                 .userId(p.getUser().getId())
                 .userNickname(p.getUser().getNickname())
                 .imageUrls(p.getImages() != null ?

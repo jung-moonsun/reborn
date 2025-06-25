@@ -78,7 +78,7 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-        // Optional logging
+
     }
 }
 

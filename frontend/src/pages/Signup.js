@@ -7,10 +7,13 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
+  const [errorList, setErrorList] = useState([]);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorList([]);
+
     try {
       await signup(email, password, nickname);
       const res = await login(email, password);
@@ -18,6 +21,16 @@ export default function Signup() {
       navigate('/');
     } catch (err) {
       console.error(err);
+
+      const validationErrors = err.response?.data?.validation;
+      const fallbackMsg = err.response?.data?.message || '회원가입 실패';
+
+      if (validationErrors && typeof validationErrors === 'object') {
+        const msgs = Object.values(validationErrors);
+        setErrorList(msgs);
+      } else {
+        setErrorList([fallbackMsg]);
+      }
     }
   };
 
@@ -34,7 +47,7 @@ export default function Signup() {
         />
         <input
           type="password"
-          placeholder="비밀번호"
+          placeholder="비밀번호 (대/소문자, 숫자, 특수문자 포함)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -46,6 +59,13 @@ export default function Signup() {
           onChange={(e) => setNickname(e.target.value)}
           required
         />
+        {errorList.length > 0 && (
+          <ul className="error-list">
+            {errorList.map((msg, idx) => (
+              <li key={idx}>{msg}</li>
+            ))}
+          </ul>
+        )}
         <button type="submit">가입하기</button>
       </form>
     </div>

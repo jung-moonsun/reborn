@@ -1,5 +1,5 @@
 // src/api/chatRoom.js
-import axios from './axios'; // ✅ 요거로 바꿔야 인증됨
+import axios from './axios';
 import { getProfile } from './auth';
 
 export const createOrGetRoom = (productId, buyerId) =>
@@ -12,13 +12,13 @@ export const getMessages = (roomId) =>
   axios.get(`/chat/rooms/${roomId}/messages`);
 
 export const getMyRooms = async () => {
-  const profileRes = await getProfile(); // 이게 잘 동작하면 토큰은 유효하다는 뜻
+  const profileRes = await getProfile();
   const userId = profileRes.data.id;
   return axios.get(`/chat/rooms/user/${userId}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`
     },
-    withCredentials: true // 🔥 이거 안 넣으면 403 뜸
+    withCredentials: true
   });
 };
 

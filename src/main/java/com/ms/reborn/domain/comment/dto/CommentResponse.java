@@ -19,7 +19,7 @@ public class CommentResponse {
     private String content;
     private LocalDateTime createdAt;
     private Long parentId;
-    private List<CommentResponse> replies; // 대댓글
+    private List<CommentResponse> replies;
 
     public static CommentResponse from(Comment c) {
         return CommentResponse.builder()

@@ -65,18 +65,25 @@ export default function ProductDetail() {
     }
   };
 
-  const handleChat = async () => {
-    if (!userId) {
-      alert('로그인 정보가 없습니다.');
+const handleChat = async () => {
+  if (!userId) {
+    alert('로그인 정보가 없습니다.');
+    return;
+  }
+  try {
+    const res = await createOrGetRoom(id, userId);
+    const roomId = res?.data?.id;
+    if (!roomId) {
+      console.error('채팅방 생성 응답 이상함:', res);
+      alert('채팅방 생성에 실패했습니다.');
       return;
     }
-    try {
-      const res = await createOrGetRoom(id, userId);
-      navigate(`/chat/${res.data.data.id}`);
-    } catch (err) {
-      console.error('채팅방 생성 실패', err);
-    }
-  };
+    navigate(`/chat/${roomId}`);
+  } catch (err) {
+    console.error('채팅방 생성 실패', err.response || err);
+    alert('채팅방 생성 중 오류가 발생했습니다.');
+  }
+};
 
   const handleUpdate = () => navigate(`/product/edit/${id}`);
   const handleDelete = async () => {

@@ -1,5 +1,8 @@
 package com.ms.reborn.domain.user.service;
 
+import com.ms.reborn.domain.chat.repository.ChatMessageRepository;
+import com.ms.reborn.domain.chat.repository.ChatRoomRepository;
+import com.ms.reborn.domain.comment.repository.CommentRepository;
 import com.ms.reborn.domain.product.repository.ProductRepository;
 import com.ms.reborn.domain.user.dto.LoginRequest;
 import com.ms.reborn.domain.user.dto.UserRequest;
@@ -22,6 +25,9 @@ public class UserService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -88,10 +94,18 @@ public class UserService {
             }
         }
 
-        // ✅ 유저의 상품 먼저 삭제
+        // ✅ 1. 댓글: 자식 → 부모 순서로 삭제
+        commentRepository.deleteChildCommentsByUserId(userId);
+        commentRepository.deleteParentCommentsByUserId(userId);
+
+        // ✅ 2. 채팅 메시지 → 채팅방 순으로 삭제
+        chatMessageRepository.deleteByUserId(userId);
+        chatRoomRepository.deleteByUserId(userId);
+
+        // ✅ 3. 상품 삭제
         productRepository.deleteByUserId(userId);
 
-        // ✅ 유저 soft delete
+        // ✅ 4. 유저 soft delete
         user.setDeleted(true);
         userRepository.save(user);
     }

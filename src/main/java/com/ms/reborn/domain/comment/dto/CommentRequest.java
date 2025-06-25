@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CommentRequest {
-    private Long productId;      // 댓글 대상(상품 등) ID
+    private Long productId;
     private Long parentId;       // 대댓글 부모 ID(null 가능)
 
     @NotBlank(message = "댓글 내용은 필수입니다.")
