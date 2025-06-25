@@ -119,6 +119,14 @@ npm start
 
 👉 [시연 영상 보러가기](https://www.youtube.com/watch?v=13NGo-gOYAk)
 
+## 시연 후 S3 상태와 token 발급 상태
+
+![스크린샷 2025-06-25 154529](https://github.com/user-attachments/assets/1279c282-8d67-4f72-9baa-5a4f2ebe8ed7)
+![스크린샷 2025-06-25 154911](https://github.com/user-attachments/assets/a04c986e-a03d-40f2-b46b-11fba0106471)
+![스크린샷 2025-06-25 154921](https://github.com/user-attachments/assets/733a3cbc-47a4-469a-bc26-ed15250e4ab7)
+![스크린샷 2025-06-25 154927](https://github.com/user-attachments/assets/8ac39251-8288-4021-8cdb-409ed26b919d)
+
+
 ---
 
 ---
