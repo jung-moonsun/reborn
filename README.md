@@ -119,7 +119,7 @@ npm start
 
 👉 [시연 영상 보러가기](https://www.youtube.com/watch?v=13NGo-gOYAk)
 
-## 시연 후 S3 상태와 token 발급 상태
+### 시연 후 S3 상태와 token 발급 상태
 
 ### token
 
