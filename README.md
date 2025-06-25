@@ -121,7 +121,11 @@ npm start
 
 ## 시연 후 S3 상태와 token 발급 상태
 
+### token
+
 ![스크린샷 2025-06-25 154529](https://github.com/user-attachments/assets/1279c282-8d67-4f72-9baa-5a4f2ebe8ed7)
+
+### S3
 
 ![스크린샷 2025-06-25 154911](https://github.com/user-attachments/assets/a04c986e-a03d-40f2-b46b-11fba0106471)
 
