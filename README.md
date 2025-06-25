@@ -117,7 +117,7 @@ npm start
 
 ## 📽 시연 영상
 
-👉 [시연 영상 보러가기](https://영상링크삽입)
+👉 [시연 영상 보러가기](https://www.youtube.com/watch?v=13NGo-gOYAk)
 
 ---
 
