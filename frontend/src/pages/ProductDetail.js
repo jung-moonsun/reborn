@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProduct, deleteProduct } from '../api/product';
+import { getProduct, deleteProduct, updateProductStatus } from '../api/product';
 import { getComments, addComment, updateComment, deleteComment } from '../api/comment';
 import { getProfile } from '../api/auth';
 import { createOrGetRoom } from '../api/chatRoom';
@@ -28,6 +28,7 @@ export default function ProductDetail() {
           getComments(id),
           getProfile(),
         ]);
+         console.log('✅ product.status:', prodRes.data.data.status);
         setProduct(prodRes.data.data);
         setUserId(userRes.data.id);
         setComments(commentRes.data.data || []);
@@ -94,6 +95,16 @@ const handleChat = async () => {
     } catch (err) {
       console.error('상품 삭제 실패', err);
       alert('삭제에 실패했습니다.');
+    }
+  };
+
+  const handleMarkAsSoldOut = async () => {
+    try {
+      await updateProductStatus(id, 'SOLD_OUT');
+      const res = await getProduct(id); // 다시 불러오기
+      setProduct(res.data.data);
+    } catch (err) {
+      alert('판매완료 처리에 실패했습니다.');
     }
   };
 
@@ -196,13 +207,17 @@ const handleChat = async () => {
 
   if (!product) return <div className="product-detail">로딩중...</div>;
   const isOwner = userId === product.userId;
+  const isSoldOut = product?.status?.toUpperCase() === 'SOLD_OUT';
 
   return (
     <div className="product-detail">
       <a href={toAbsoluteImageUrl(product.imageUrls?.[0])} target="_blank" rel="noopener noreferrer">
         <img src={toAbsoluteImageUrl(product.imageUrls?.[0])} alt={product.title} className="image" />
       </a>
-      <h2>{product.title}</h2>
+      <h2>
+        {product.title}
+        {isSoldOut && <span className="sold-out-badge" style={{ marginLeft: '8px' }}>판매완료</span>}
+      </h2>
       <div className="meta">
         <span>판매자: <strong>{product.userNickname}</strong></span><br />
         <span>등록일: {new Date(product.createdAt).toLocaleString()}</span><br />
@@ -213,14 +228,17 @@ const handleChat = async () => {
       <p className="price">{product.price.toLocaleString()}원</p>
       <p className="description">{product.description}</p>
 
-      {isOwner ? (
-        <div className="owner-actions">
-          <button onClick={handleUpdate}>수정</button>
-          <button onClick={handleDelete}>삭제</button>
-        </div>
-      ) : (
-        <button className="chat-btn" onClick={handleChat}>채팅하기</button>
-      )}
+    {isOwner ? (
+      <div className="owner-actions">
+        <button onClick={handleUpdate}>수정</button>
+        <button onClick={handleDelete}>삭제</button>
+        {!isSoldOut && (
+          <button onClick={handleMarkAsSoldOut}>판매완료</button>
+        )}
+      </div>
+    ) : (
+      !isSoldOut && <button className="chat-btn" onClick={handleChat}>채팅하기</button>
+    )}
 
       <hr style={{ margin: '20px 0' }} />
       <h3>댓글</h3>

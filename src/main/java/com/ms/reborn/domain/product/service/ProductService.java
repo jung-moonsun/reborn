@@ -103,4 +103,20 @@ public class ProductService {
         return productRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
                 .map(ProductResponse::from);
     }
+
+    @Transactional
+    public void updateProductStatus(Long productId, String status, Long userId) {
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        if (!product.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        if (!status.equals("ACTIVE") && !status.equals("SOLD_OUT")) {
+            throw new CustomException(ErrorCode.INVALID_INPUT);
+        }
+
+        product.setStatus(status);
+    }
 }

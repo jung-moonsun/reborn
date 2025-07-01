@@ -39,6 +39,6 @@ public class ChatRoom {
     @Builder.Default
     private boolean exitedBySeller = false;
 
-    private LocalDateTime buyerExitedAt;
-    private LocalDateTime sellerExitedAt;
+//    private LocalDateTime buyerExitedAt;
+//    private LocalDateTime sellerExitedAt;
 }

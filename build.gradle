@@ -45,6 +45,7 @@ dependencies {
 	implementation 'software.amazon.awssdk:s3'
 	implementation platform('software.amazon.awssdk:bom:2.20.154')
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation 'org.mockito:mockito-core'
 }
 
 tasks.named('test') {

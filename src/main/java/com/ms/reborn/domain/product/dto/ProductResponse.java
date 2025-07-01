@@ -23,6 +23,7 @@ public class ProductResponse {
     private Long userId;
     private String userNickname;
     private List<String> imageUrls;
+    private String status;
 
     public static ProductResponse from(Product p) {
         return ProductResponse.builder()
@@ -37,6 +38,7 @@ public class ProductResponse {
                 .imageUrls(p.getImages() != null ?
                         p.getImages().stream().map(ProductImage::getImageUrl).collect(Collectors.toList())
                         : null)
+                .status(p.getStatus())
                 .build();
     }
 }

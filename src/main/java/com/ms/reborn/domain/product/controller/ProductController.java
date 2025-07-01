@@ -108,4 +108,16 @@ public class ProductController {
         var mine = productService.getMyProducts(userDetails.getUser().getId(), page, size);
         return ResponseEntity.ok(ApiResponse.success(mine));
     }
+
+    @Operation(summary = "상품 상태 변경", description = "자신이 올린 상품의 판매 상태를 변경합니다.")
+    @SecurityRequirement(name = "JWT")
+    @PutMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<Void>> updateProductStatus(
+            @PathVariable Long productId,
+            @RequestParam String status,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        productService.updateProductStatus(productId, status, userDetails.getUser().getId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

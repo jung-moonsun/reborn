@@ -11,3 +11,6 @@ export const updateProduct = (id, data) =>
 
 export const deleteProduct = (id) =>
   axios.delete(`/products/${id}`);
+
+ export const updateProductStatus = (id, status) =>
+   axios.put(`/products/${id}/status`, null, { params: { status } });
