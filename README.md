@@ -51,7 +51,7 @@ JWT 인증, 카카오 소셜 로그인, 상품 CRUD, 실시간 채팅(WebSocket)
 
 ## 📚 API 명세서 (Swagger)
 
-🔗 [Swagger UI 바로가기](http://localhost:8080/swagger-ui/index.html)
+🔗 [Swagger UI 바로가기](http://reborn-app-env.eba-fdizev3m.ap-northeast-2.elasticbeanstalk.com/swagger-ui/index.html#/)
 
 > ※ JWT가 필요한 API는 `Authorize` 버튼 클릭 후 토큰 입력 필요
 
