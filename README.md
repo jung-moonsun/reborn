@@ -49,6 +49,16 @@ JWT 인증, 카카오 소셜 로그인, 상품 CRUD, 실시간 채팅(WebSocket)
 
 ---
 
+## ☁️ 배포 환경
+
+- **백엔드**: AWS Elastic Beanstalk에 배포 완료  
+- **DB**: AWS RDS(MySQL)  
+- **이미지 저장소**: AWS S3  
+- **API 문서**: Swagger UI 제공  
+
+백엔드 서버는 AWS에 배포되어 있으며, Swagger를 통해 직접 API를 호출해볼 수 있습니다.  
+프론트엔드는 로컬 환경에서 실행하여 배포된 백엔드와 연동됩니다.  
+
 ## 📚 API 명세서 (Swagger)
 
 🔗 [Swagger UI 바로가기](http://reborn-app-env.eba-fdizev3m.ap-northeast-2.elasticbeanstalk.com/swagger-ui/index.html#/)
@@ -57,7 +67,7 @@ JWT 인증, 카카오 소셜 로그인, 상품 CRUD, 실시간 채팅(WebSocket)
 
 ---
 
-## 🛠 실행 방법
+## 🛠 로컬 실행 방법
 
 ```bash
 # 백엔드
@@ -127,8 +137,17 @@ npm start
 
 ### 1. WebSocket 기반 실시간 채팅
 
-**문제**: 구매자/판매자가 채팅방을 나갔다가 다시 들어오는 경우, 채팅방을 새로 만들지 않고 기존 방을 유지하는 로직이 복잡했습니다.  
-**해결**: `exitedByBuyer`, `exitedBySeller` 플래그를 따로 관리하고, 채팅방 조회 시 조건 분기를 세분화하여 재사용 가능하도록 설계했습니다.
+**문제**: A와 B가 채팅 중일 때, B가 채팅방을 나가면 A는 기존 채팅방이 유지됩니다.
+그 상태에서 A가 퇴장 사실을 모른 채 다시 메시지를 보내면
+
+1.B 입장에서는 새로운 채팅방이 생성되고
+
+2.A는 기존 채팅방이 그대로 유지되어야 하는 복잡한 로직이 필요했습니다.
+
+**해결**: `exitedByBuyer`, `exitedBySeller` 플래그를 추가하여 퇴장 여부를 저장하고,
+채팅방 조회 시 기존 방을 재사용할지 새로 생성할지 분기 처리했습니다.
+
+이 방식으로 사용자 입장에서 자연스러운 채팅 경험을 제공했습니다.
 
 ---
 
@@ -150,6 +169,107 @@ npm start
 
 **문제**: 소셜 로그인 시 동일한 이메일로 일반 로그인 사용자가 있을 경우 식별 충돌이 발생했습니다.  
 **해결**: `provider`, `providerId` 컬럼을 별도 관리하여 로그인 방식에 따라 유저를 구분하고, 유효성 검사 로직을 개선했습니다.
+
+---
+
+## ✅ 예외 처리 설계
+
+Reborn Market은 서비스 로직에서 **권한 및 유효성 검증 후 예외 처리**를 적용하여  
+API 요청 시 발생할 수 있는 오류를 명확하게 전달하도록 설계했습니다.  
+
+### 📌 글로벌 예외 처리
+
+- `CustomException` + `ErrorCode` Enum으로 예외 유형을 관리  
+- `@RestControllerAdvice` 기반 전역 예외 처리 핸들러 사용  
+- 클라이언트가 **HTTP 상태코드 + 에러 메시지 + 에러 코드**를 명확히 받을 수 있도록 구현  
+
+---
+
+### 📌 예외 처리 패턴
+
+1. **리소스 존재 여부 검증**
+   - 없는 상품, 없는 사용자 요청 시 `orElseThrow()` 사용
+2. **권한 검증**
+   - 작성자가 아닌 사용자가 수정/삭제 시도 → `AccessDeniedException` 발생
+3. **삭제된 사용자/상품 검증**
+   - soft delete 된 경우 `UNAUTHORIZED_USER` 예외 처리
+
+---
+
+### 📌 예외 처리 예시
+
+#### 1) 채팅방 생성 시 예외 처리
+
+```java
+// 상품이 없거나, 삭제된 사용자면 예외 발생
+Product product = productRepository.findById(productId)
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+User buyer = userRepository.findById(buyerId)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+if (buyer.isDeleted()) {
+    throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+}
+```
+
+PRODUCT_NOT_FOUND → 잘못된 상품 ID 요청 시
+
+USER_NOT_FOUND → 존재하지 않는 사용자일 경우
+
+UNAUTHORIZED_USER → 이미 탈퇴한 계정이 요청했을 경우
+
+---
+
+#### 2)  댓글 수정/삭제 권한 검증
+
+```java
+public void validateCommentOwner(Comment comment, Long userId) {
+    if (!comment.getUser().getId().equals(userId)) {
+        throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+    }
+}
+```
+
+작성자가 아닌 사용자가 수정/삭제를 시도하면 UNAUTHORIZED_USER 반환
+
+---
+
+#### 3) 상품 수정 권한 검증
+
+```java
+@Transactional
+public ProductResponse updateProduct(Long productId, ProductRequest request, Long userId) {
+    Product product = productRepository.findById(productId)
+        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+    if (!product.getOwnerId().equals(userId)) {
+        throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+    }
+
+    product.update(request.getTitle(), request.getDescription(), request.getPrice());
+    return ProductResponse.from(product);
+}
+```
+
+상품이 없거나 작성자가 아닌 경우 예외 발생
+
+@Transactional 로직 내에서 예외 발생 시 롤백 처리
+
+--- 
+
+### 📌 예외 응답 예시
+
+```
+{
+  "success": false,
+  "status": 400,
+  "code": "PRODUCT_NOT_FOUND",
+  "message": "상품이 존재하지 않습니다."
+}
+```
+
+✅ 이런 패턴으로 모든 CRUD 요청과 인증/인가 흐름에 예외 처리를 적용했습니다.
 
 ---
 
